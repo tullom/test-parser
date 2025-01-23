@@ -1,29 +1,20 @@
+#![no_std]
+use defmt_rtt as _;
 
-
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
+#[panic_handler]
+fn panic(p: &core::panic::PanicInfo) -> ! {
+    defmt::error!(
+        "TEST-FAIL: {} failed on line {} with error {}",
+        p.location().unwrap().file(),
+        p.location().unwrap().line(),
+        p.message().as_str()
+    );
+    cortex_m::asm::bkpt();
+    loop {}
 }
 
-#[cfg(test)]
-mod tests {
-    use rand::Rng;
-    use sha2::{ Sha256, Digest};
-
-    use super::*;
-
-    #[test]
-    fn it_works() {
-
-        let mut rng = rand::thread_rng();
-        let random_bytes: [u8; 32] = rng.gen();
-
-        let mut hasher = Sha256::new();
-        hasher.update(random_bytes);
-        let result = hasher.finalize();
-        let hash = String::from_utf8_lossy(&result[..]);
-        println!("{}", hash);
-        for byte in &result[..] {
-            print!("{}", byte);
-        }
-    }
+pub fn pass_test() {
+    defmt::info!("TEST-SUCCESS: Example terminated successfully");
+    defmt::flush();
+    cortex_m::asm::bkpt();
 }
